@@ -1,0 +1,16 @@
+# IntelliJ
+.idea
+
+# VSCode
+.vscode/*
+.history/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+[Dd]esktop.ini
+
+# Go
+vendor

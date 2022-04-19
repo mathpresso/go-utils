@@ -10,17 +10,17 @@ var _ error = (*wrapped)(nil)
 var _ fmt.Formatter = (*wrapped)(nil)
 
 type wrapped struct {
-	err error
+	error
 	*causer
 	*traceable
 }
 
 func (w *wrapped) Error() string {
-	return w.err.Error()
+	return w.Error()
 }
 
 func (w *wrapped) Is(err error) bool {
-	return errors.Is(w.err, err)
+	return errors.Is(w.error, err)
 }
 
 func (w *wrapped) Format(f fmt.State, verb rune) {
@@ -63,7 +63,7 @@ func Wrap(err error, opts ...wrapOpt) error {
 		return we
 	}
 
-	w := &wrapped{err: err}
+	w := &wrapped{error: err}
 	for _, opt := range opts {
 		opt(w)
 	}

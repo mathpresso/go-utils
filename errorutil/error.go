@@ -15,10 +15,6 @@ type wrapped struct {
 	*traceable
 }
 
-func (w *wrapped) Error() string {
-	return w.Error()
-}
-
 func (w *wrapped) Is(err error) bool {
 	return errors.Is(w.error, err)
 }
@@ -53,7 +49,7 @@ func FromCause(err error) wrapOpt {
 	}
 }
 
-// Wrap wraps the err with provided opts.
+// Wrap wraps the error with provided opts.
 func Wrap(err error, opts ...wrapOpt) error {
 	if err == nil {
 		return nil

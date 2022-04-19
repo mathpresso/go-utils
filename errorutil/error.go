@@ -34,8 +34,8 @@ func (w *wrapped) Format(f fmt.State, verb rune) {
 
 type wrapOpt func(w *wrapped)
 
-// AutoStackTrace bind stack trace from Wrap method caller to the error.
-// You don't have to provide this option, because this is used by default.
+// AutoStackTrace automatically bind caller's stacktrace to error. This makes some error-capturing module (like [sentry-go](https://github.com/getsentry/sentry-go)) can extract proper stacktrace of your error.
+// For convenience, this option is enabled by default even if you don't include it.
 func AutoStackTrace() wrapOpt {
 	return func(w *wrapped) {
 		w.traceable = traceableFromCallers(4)

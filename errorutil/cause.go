@@ -13,8 +13,5 @@ func (c *causer) Cause() error {
 
 // Unwrap stands for error chaining compatibility
 func (c *causer) Unwrap() error {
-	if c == nil || c.cause == nil {
-		return nil
-	}
-	return c.cause
+	return c.Cause()
 }

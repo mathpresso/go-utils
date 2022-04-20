@@ -5,7 +5,7 @@ type causer struct {
 }
 
 func (c *causer) Cause() error {
-	if c == nil || c.cause == nil {
+	if c == nil {
 		return nil
 	}
 	return c.cause

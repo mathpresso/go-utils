@@ -1,3 +1,7 @@
+// Package errorutil provides simple error wrapper for some features.
+// Inspired by https://github.com/pkg/errors
+//
+// Currently, errorutil provides error chaining mechanism with hierachy, and auto stacktrace binding.
 package errorutil
 
 import (
@@ -9,12 +13,14 @@ import (
 var _ error = (*wrapped)(nil)
 var _ fmt.Formatter = (*wrapped)(nil)
 
+// wrapped is wrapped error with extended features
 type wrapped struct {
 	error
 	*causer
 	*traceable
 }
 
+// Is implements error interface. This makes error compare works properly.
 func (w *wrapped) Is(err error) bool {
 	return errors.Is(w.error, err)
 }
@@ -32,24 +38,7 @@ func (w *wrapped) Format(f fmt.State, verb rune) {
 	}
 }
 
-type wrapOpt func(w *wrapped)
-
-// AutoStackTrace automatically bind caller's stacktrace to error. This makes some error-capturing module (like [sentry-go](https://github.com/getsentry/sentry-go)) can extract proper stacktrace of your error.
-// For convenience, this option is enabled by default even if you don't include it.
-func AutoStackTrace() wrapOpt {
-	return func(w *wrapped) {
-		w.traceable = traceableFromCallers(4)
-	}
-}
-
-// FromCause wrap the error with provided cause. If you Unwrap this error, provided cause will be extracted.
-func FromCause(err error) wrapOpt {
-	return func(w *wrapped) {
-		w.causer = &causer{cause: err}
-	}
-}
-
-// Wrap wraps the error with provided opts.
+// Wrap wraps the error with provided options.
 func Wrap(err error, opts ...wrapOpt) error {
 	if err == nil {
 		return nil
@@ -69,4 +58,21 @@ func Wrap(err error, opts ...wrapOpt) error {
 	}
 
 	return w
+}
+
+type wrapOpt func(w *wrapped)
+
+// AutoStackTrace is the option which automatically bind caller's stacktrace to error. This makes some error-capturing module (like https://github.com/getsentry/sentry-go) can extract proper stacktrace of your error.
+// For convenience, this option is enabled by default even if you don't include it.
+func AutoStackTrace() wrapOpt {
+	return func(w *wrapped) {
+		w.traceable = traceableFromCallers(4)
+	}
+}
+
+// FromCause is the option which wraps the error with provided cause. If you Unwrap this error, provided cause will be extracted.
+func FromCause(cause error) wrapOpt {
+	return func(w *wrapped) {
+		w.causer = &causer{cause: cause}
+	}
 }

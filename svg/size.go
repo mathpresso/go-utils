@@ -1,11 +1,10 @@
 package svg
 
 import (
+	"encoding/xml"
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/rustyoz/svg"
 )
 
 const (
@@ -27,10 +26,17 @@ const (
 	pxPerPica = float64(16)
 )
 
+type svg struct {
+	Width   string `xml:"width,attr"`
+	Height  string `xml:"height,attr"`
+	ViewBox string `xml:"viewBox,attr"`
+}
+
 func Size(str string) (width, height int, err error) {
-	parsed, err := svg.ParseSvg(str, "", 0)
+	parsed := svg{}
+	err = xml.Unmarshal([]byte(str), &parsed)
 	if err != nil {
-		return 0, 0, fmt.Errorf("%w: parse svg: %s", err, str)
+		return 0, 0, fmt.Errorf("%w: parse svg", err)
 	}
 
 	w, h := parsed.Width, parsed.Height

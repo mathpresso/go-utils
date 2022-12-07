@@ -114,6 +114,21 @@ func TestSize(t *testing.T) {
 			3200,
 			false,
 		},
+		{
+			"nested svg",
+			`
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" height="639"
+    width="505" viewBox="(0, 0, 505, 639)">
+    <defs />
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" height="639"
+        width="505" viewBox="0 -639 505 639">
+        <defs />
+    </svg>
+</svg>`,
+			505,
+			639,
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

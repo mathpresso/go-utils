@@ -6,7 +6,7 @@ Package errorutil provides some feature that helps handling [svg](https://en.wik
 ## Installation
 
 ```bash
-$ go get https://github.com/mathpresso/go-utils/svg
+$ go get github.com/mathpresso/go-utils/svg
 ```
 
 ## Features

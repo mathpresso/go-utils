@@ -1,4 +1,4 @@
-package svg
+package svgutil
 
 import (
 	"encoding/xml"

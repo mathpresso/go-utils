@@ -1,9 +1,9 @@
-package svg_test
+package svgutil_test
 
 import (
 	"testing"
 
-	svgutil "github.com/mathpresso/go-utils/svg"
+	"github.com/mathpresso/go-utils/svgutil"
 )
 
 func TestSize(t *testing.T) {

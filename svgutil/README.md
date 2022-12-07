@@ -1,4 +1,4 @@
-# SVG utils
+# svgutil
 
 Package errorutil provides some feature that helps handling [svg](https://en.wikipedia.org/wiki/SVG) file.
 

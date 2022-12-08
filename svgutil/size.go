@@ -36,7 +36,7 @@ func Size(str string) (width, height int, err error) {
 	parsed := svg{}
 	err = xml.Unmarshal([]byte(str), &parsed)
 	if err != nil {
-		return 0, 0, fmt.Errorf("%w: parse svg", err)
+		return 0, 0, fmt.Errorf("parse failed: %w", err)
 	}
 
 	w, h := parsed.Width, parsed.Height

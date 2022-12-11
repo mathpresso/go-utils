@@ -5,26 +5,58 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
-const (
-	pixel = "px"
+type unit struct {
+	notation     string
+	pixelPerUnit float64
+}
 
-	inch      = "in"
-	pxPerInch = float64(96)
+var (
+	pixel      = unit{notation: "px", pixelPerUnit: 1}
+	inch       = unit{notation: "in", pixelPerUnit: 96}
+	centimeter = unit{notation: "cm", pixelPerUnit: 37.79}
+	millimeter = unit{notation: "mm", pixelPerUnit: 3.779}
+	point      = unit{notation: "pt", pixelPerUnit: 1.33}
+	pica       = unit{notation: "pc", pixelPerUnit: 16}
 
-	centimeter      = "cm"
-	pxPerCentimeter = float64(37.79)
-
-	millimeter      = "mm"
-	pxPerMillimeter = float64(3.779)
-
-	point      = "pt"
-	pxPerPoint = float64(1.33)
-
-	pica      = "pc"
-	pxPerPica = float64(16)
+	units = []unit{
+		pixel,
+		inch,
+		centimeter,
+		millimeter,
+		point,
+		pica,
+	}
 )
+
+func (u unit) toValue(s string) (value, error) {
+	if !strings.HasSuffix(s, u.notation) {
+		return value{}, fmt.Errorf("not %s: %s", u.notation, s)
+	}
+	trimmed := strings.TrimSuffix(s, u.notation)
+	f, err := strconv.ParseFloat(trimmed, 64)
+	if err != nil {
+		return value{}, fmt.Errorf("parse float: %w", err)
+	}
+	return value{
+		value: f,
+		unit:  u,
+	}, nil
+}
+
+type value struct {
+	value float64
+	unit  unit
+}
+
+func (s value) toPixel() value {
+	return value{
+		value: s.value * s.unit.pixelPerUnit,
+		unit:  pixel,
+	}
+}
 
 type svg struct {
 	Width   string `xml:"width,attr"`
@@ -47,27 +79,31 @@ func Size(str string) (width, height int, err error) {
 			return 0, 0, err
 		}
 	}
-
-	wf, wfErr := strconv.ParseFloat(w, 64)
-	hf, hFErr := strconv.ParseFloat(h, 64)
-	if wfErr == nil && hFErr == nil {
-		return int(wf), int(hf), nil
+	if unicode.IsNumber(rune(w[len(w)-1])) {
+		w += pixel.notation
+	}
+	if unicode.IsNumber(rune(h[len(h)-1])) {
+		h += pixel.notation
 	}
 
-	if hasUnit(w, h, pixel) {
-		return convert(w, h, pixel, 1)
-	} else if hasUnit(w, h, inch) {
-		return convert(w, h, inch, pxPerInch)
-	} else if hasUnit(w, h, centimeter) {
-		return convert(w, h, centimeter, pxPerCentimeter)
-	} else if hasUnit(w, h, millimeter) {
-		return convert(w, h, millimeter, pxPerMillimeter)
-	} else if hasUnit(w, h, point) {
-		return convert(w, h, point, pxPerPoint)
-	} else if hasUnit(w, h, pica) {
-		return convert(w, h, pica, pxPerPica)
+	for _, unit := range units {
+		if width == 0 {
+			wv, err := unit.toValue(w)
+			if err == nil {
+				width = int(wv.toPixel().value)
+			}
+		}
+		if height == 0 {
+			hv, err := unit.toValue(h)
+			if err == nil {
+				height = int(hv.toPixel().value)
+			}
+		}
+		if width != 0 && height != 0 {
+			return width, height, nil
+		}
 	}
-	return 0, 0, fmt.Errorf("not surpported unit: %s, %s", w, h)
+	return 0, 0, fmt.Errorf("invalid length value: (%s, %s)", w, h)
 }
 
 func whFromViewBox(vb string) (width string, height string, err error) {
@@ -76,21 +112,4 @@ func whFromViewBox(vb string) (width string, height string, err error) {
 		return "", "", fmt.Errorf("invalid view box: %s", vb)
 	}
 	return split[2], split[3], nil
-}
-
-func convert(w, h, unit string, pxPerUnit float64) (width int, height int, err error) {
-	w, h = strings.TrimSuffix(w, unit), strings.TrimRight(h, unit)
-	wf, err := strconv.ParseFloat(w, 64)
-	if err != nil {
-		return 0, 0, fmt.Errorf("%w: parse float: %s", err, w)
-	}
-	hf, err := strconv.ParseFloat(h, 64)
-	if err != nil {
-		return 0, 0, fmt.Errorf("%w: parse float: %s", err, h)
-	}
-	return int(wf * pxPerUnit), int(hf * pxPerUnit), nil
-}
-
-func hasUnit(w, h, unit string) bool {
-	return strings.HasSuffix(w, unit) && strings.HasSuffix(h, unit)
 }

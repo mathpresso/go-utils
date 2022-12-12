@@ -73,7 +73,7 @@ func Size(str string) (width, height int, err error) {
 
 	w, h := parsed.Width, parsed.Height
 
-	if w == "" && h == "" {
+	if w == "" || h == "" {
 		w, h, err = whFromViewBox(parsed.ViewBox)
 		if err != nil {
 			return 0, 0, err
